@@ -1,0 +1,95 @@
+{
+  "name": "trailverse",
+  "version": "1.0.0",
+  "description": "🔥 Trailverse - Your Universe of Trail Adventures. Advanced National Parks Explorer with AI, AR, and Real-time Features",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "build": "npm run build:shared && npm run build:client && npm run build:server",
+    "build:shared": "cd shared && npm run build",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "test": "npm run test:shared && npm run test:client && npm run test:server",
+    "test:shared": "cd shared && npm run test",
+    "test:client": "cd client && npm run test:run",
+    "test:server": "cd server && npm run test",
+    "test:coverage": "npm run test:shared && npm run test:client -- --coverage && npm run test:server -- --coverage",
+    "lint": "npm run lint:shared && npm run lint:client && npm run lint:server",
+    "lint:shared": "cd shared && npm run lint",
+    "lint:client": "cd client && npm run lint",
+    "lint:server": "cd server && npm run lint",
+    "lint:fix": "npm run lint:shared -- --fix && npm run lint:client -- --fix && npm run lint:server -- --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "type-check": "npm run type-check:shared && npm run type-check:client && npm run type-check:server",
+    "type-check:shared": "cd shared && npm run build",
+    "type-check:client": "cd client && npm run type-check",
+    "type-check:server": "cd server && npm run type-check",
+    "setup": "npm install",
+    "setup:workspaces": "npm run setup:shared && npm run setup:client && npm run setup:server",
+    "setup:shared": "cd shared && npm install",
+    "setup:client": "cd client && npm install",
+    "setup:server": "cd server && npm install",
+    "setup:mobile": "cd mobile && npm install",
+    "docker:dev": "docker-compose -f docker-compose.yml up",
+    "docker:prod": "docker-compose -f docker-compose.prod.yml up",
+    "clean": "npm run clean:deps && npm run clean:builds",
+    "clean:deps": "rm -rf node_modules client/node_modules server/node_modules shared/node_modules mobile/node_modules",
+    "clean:builds": "rm -rf client/dist server/dist shared/dist",
+    "reset": "npm run clean && npm run setup && npm run setup:workspaces",
+    "verify": "./verify-setup.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trailversedev/trailverse.git"
+  },
+  "keywords": [
+    "trailverse",
+    "national-parks",
+    "travel",
+    "outdoor",
+    "trails",
+    "hiking",
+    "react",
+    "nodejs",
+    "ai",
+    "machine-learning",
+    "ar",
+    "augmented-reality",
+    "real-time",
+    "pwa",
+    "mobile-app",
+    "adventure",
+    "nature",
+    "exploration"
+  ],
+  "author": "Trailverse Team <dev@trailverse.app>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trailversedev/trailverse/issues"
+  },
+  "homepage": "https://trailverse.app",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "@commitlint/cli": "^18.4.3",
+    "@commitlint/config-conventional": "^18.4.3",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "volta": {
+    "node": "18.19.0",
+    "npm": "10.2.3"
+  }
+}

@@ -1,0 +1,215 @@
+# ===================================================================
+# TRAILVERSE - COMPREHENSIVE .GITIGNORE
+# ===================================================================
+
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.yarn/
+.npm/
+
+# Production builds
+/build
+/dist
+/.next/
+/out/
+/client/build
+/client/dist
+/server/dist
+/shared/dist
+/mobile/build
+
+# Environment variables (CRITICAL - NEVER COMMIT)
+.env
+.env.local
+.env.development
+.env.staging
+.env.production
+.env.test
+*.env.local
+*.env.backup
+
+# API Keys and Secrets (CRITICAL - NEVER COMMIT)
+/config/secrets.json
+/config/keys.json
+**/secrets/
+**/keys/
+**/.secrets
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+.nyc_output/
+
+# Temporary folders
+tmp/
+temp/
+.cache/
+.parcel-cache/
+
+# Docker
+.docker/
+docker-compose.override.yml
+.dockerignore.backup
+
+# ML/AI specific
+*.pkl
+*.model
+*.weights
+*.h5
+*.pb
+checkpoints/
+tensorboard_logs/
+/ml-pipeline/models/trained/*
+/ml-pipeline/data/raw/*
+/ml-pipeline/data/processed/*
+# Keep structure files
+!/ml-pipeline/models/trained/.gitkeep
+!/ml-pipeline/data/raw/.gitkeep
+!/ml-pipeline/data/processed/.gitkeep
+
+# Python specific (for ML pipeline)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars
+*.tfvars
+
+# Cloud and deployment
+.vercel
+.netlify
+.firebase/
+.gcloud/
+
+# Analytics and monitoring
+/monitoring/logs/*
+!/monitoring/logs/.gitkeep
+
+# Backup files
+/backups/*
+!/backups/.gitkeep
+*.backup
+*.bak
+
+# Package managers
+.pnpm-debug.log*
+
+# Testing
+/coverage
+/.nyc_output
+
+# Build artifacts
+*.tgz
+*.tar.gz
+
+# Prisma
+prisma/migrations/**/migration.sql
+
+# Local development overrides
+docker-compose.local.yml
+.env.local.override
+
+# Temporary files
+.tmp/
+.temp/
+
+# Editor-specific
+.vscode/settings.json.backup
+.idea/workspace.xml.backup
+
+# Certificate files
+*.cert
+*.ca-bundle
+
+# Large media files (use Git LFS instead)
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.webm
+*.mkv
+
+# Application specific
+/client/public/uploads/
+/server/uploads/
+/server/public/uploads/
+
+# Generated documentation
+/docs/generated/
+/docs/api-docs/
+
+# Local configuration overrides
+config.local.json
+settings.local.json
+
+# Debug files
+debug.log
+error.log
+trace.log

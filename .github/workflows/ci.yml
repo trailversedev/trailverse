@@ -1,0 +1,229 @@
+name: 🚀 Trailverse CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: '18.19.0'
+
+jobs:
+  # Type Checking
+  type-check:
+    runs-on: ubuntu-latest
+    name: 🔍 Type Check
+    steps:
+      - name: 📚 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: |
+          npm ci
+          npm run setup:workspaces
+
+      - name: 🔍 Type check shared
+        run: cd shared && npm run build
+
+      - name: 🔍 Type check client
+        run: cd client && npm run type-check
+
+      - name: 🔍 Type check server
+        run: cd server && npm run type-check
+
+  # Linting
+  lint:
+    runs-on: ubuntu-latest
+    name: 🧹 Lint & Format
+    steps:
+      - name: 📚 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: |
+          npm ci
+          npm run setup:workspaces
+
+      - name: 🧹 Lint shared
+        run: cd shared && npm run lint
+
+      - name: 🧹 Lint client
+        run: cd client && npm run lint
+
+      - name: 🧹 Lint server
+        run: cd server && npm run lint
+
+      - name: 💅 Check Prettier formatting
+        run: npx prettier --check .
+
+  # Client Tests
+  client-tests:
+    runs-on: ubuntu-latest
+    name: ⚛️ Client Tests
+    needs: [type-check, lint]
+    steps:
+      - name: 📚 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: |
+          npm ci
+          npm run setup:workspaces
+
+      - name: 🧪 Run client tests
+        run: cd client && npm run test:coverage
+
+      - name: 📊 Upload client coverage
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./client/coverage
+          flags: client
+
+  # Server Tests
+  server-tests:
+    runs-on: ubuntu-latest
+    name: 🚀 Server Tests
+    needs: [type-check, lint]
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: trailverse_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: 📚 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: |
+          npm ci
+          npm run setup:workspaces
+
+      - name: 🧪 Run server tests
+        run: cd server && npm run test:coverage
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/trailverse_test
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+
+      - name: 📊 Upload server coverage
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./server/coverage
+          flags: server
+
+  # Security Audit
+  security:
+    runs-on: ubuntu-latest
+    name: 🔒 Security Audit
+    steps:
+      - name: 📚 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 🔍 Security audit
+        run: |
+          npm audit --audit-level high
+          cd client && npm audit --audit-level high
+          cd ../server && npm audit --audit-level high
+          cd ../shared && npm audit --audit-level high
+
+  # Build
+  build:
+    runs-on: ubuntu-latest
+    name: 🏗️ Build
+    needs: [client-tests, server-tests, security]
+    steps:
+      - name: 📚 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: |
+          npm ci
+          npm run setup:workspaces
+
+      - name: 🏗️ Build all packages
+        run: npm run build
+
+      - name: 📤 Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            client/dist/
+            server/dist/
+            shared/dist/
+
+  # Deploy (only on main branch)
+  deploy:
+    runs-on: ubuntu-latest
+    name: 🚀 Deploy
+    needs: [build]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: 📚 Checkout
+        uses: actions/checkout@v4
+
+      - name: 📥 Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+
+      - name: 🚀 Deploy to staging
+        run: |
+          echo "🚀 Deploying to staging environment..."
+          # Add your deployment commands here

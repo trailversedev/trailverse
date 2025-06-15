@@ -1,0 +1,70 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production builds
+/build
+/dist
+/.next/
+/out/
+
+# Generated files
+*.min.js
+*.min.css
+*.bundle.js
+
+# Package managers
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Environment files
+.env*
+
+# Coverage
+coverage/
+*.lcov
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker
+Dockerfile
+docker-compose*.yml
+
+# Prisma
+prisma/migrations/
+
+# Documentation (except README)
+CHANGELOG.md
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ML/AI files
+*.pkl
+*.model
+*.weights
+*.h5
+*.pb
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
