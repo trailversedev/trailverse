@@ -44,7 +44,15 @@
     "clean:deps": "rm -rf node_modules client/node_modules server/node_modules shared/node_modules mobile/node_modules",
     "clean:builds": "rm -rf client/dist server/dist shared/dist",
     "reset": "npm run clean && npm run setup && npm run setup:workspaces",
-    "verify": "./verify-setup.sh"
+    "verify": "./verify-setup.sh",
+    "db:generate": "cd server && npm run db:generate",
+    "db:migrate": "cd server && npm run db:migrate",
+    "db:migrate:reset": "cd server && npm run db:migrate:reset",
+    "db:migrate:deploy": "cd server && npm run db:migrate:deploy",
+    "db:seed": "cd server && npm run db:seed",
+    "db:studio": "cd server && npm run db:studio",
+    "db:reset": "cd server && npm run db:reset",
+    "db:setup": "npm run db:generate && npm run db:migrate && npm run db:seed"
   },
   "repository": {
     "type": "git",
