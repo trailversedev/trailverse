@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "nodemon",
+    "dev": "node src/app.js",
     "dev:debug": "nodemon --inspect",
     "build": "tsc",
     "build:watch": "tsc --watch",

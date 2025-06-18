@@ -1,8 +1,3 @@
-# =================================
-# FIXED DOCKER-COMPOSE.YML FILE
-# =================================
-
-# Remove the version line - it's obsolete
 services:
   postgres:
     image: postgres:15-alpine
@@ -13,7 +8,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
-      - "5432:5432"  # This allows local access to PostgreSQL
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -21,6 +16,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
@@ -34,9 +30,12 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   server:
-    build: ./server
+    build: 
+      context: ./server
+      dockerfile: Dockerfile
     container_name: trailverse-server
     depends_on:
       postgres:
@@ -44,20 +43,35 @@ services:
       redis:
         condition: service_healthy
     environment:
-      # Override environment variables in container
       DATABASE_URL: postgresql://postgres:postgres@trailverse-postgres:5432/trailverse
+      DIRECT_URL: postgresql://postgres:postgres@trailverse-postgres:5432/trailverse
       NODE_ENV: development
       PORT: 5000
-      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production-123456789
+      JWT_EXPIRES_IN: 7d
+      BCRYPT_ROUNDS: 12
       REDIS_URL: redis://trailverse-redis:6379
+      NPS_API_KEY: demo-key
+      OPENAI_API_KEY: demo-key
+      WEATHER_API_KEY: demo-key
     volumes:
       - ./server:/app
-      - /app/node_modules  # Prevent overwriting node_modules
+      - /app/node_modules
     working_dir: /app
-    command: ["npm", "run", "dev"]
+    command: >
+      sh -c "
+        echo '🚀 Starting Trailverse Server...' &&
+        npx prisma generate &&
+        npx prisma db push --accept-data-loss &&
+        npm run db:seed &&
+        echo '🎯 Starting Prisma Studio...' &&
+        npx prisma studio --hostname 0.0.0.0 --port 5555 &
+        echo '🔥 Starting development server...' &&
+        npm run dev
+      "
     ports:
-      - "5001:5000"  # Map container port 5000 to host port 5001
-      - "5555:5555"  # Map Prisma Studio port
+      - "5001:5000"
+      - "5555:5555"
     restart: unless-stopped
 
 volumes:
