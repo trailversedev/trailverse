@@ -1,6 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
+// server/prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,100 +6,6 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-}
-
-// ===============================
-// 👤 USER MANAGEMENT
-// ===============================
-
-model User {
-  id                String    @id @default(cuid())
-  email             String    @unique
-  username          String?   @unique
-  firstName         String?
-  lastName          String?
-  avatar            String?
-  bio               String?
-  phone             String?
-  dateOfBirth       DateTime?
-  isVerified        Boolean   @default(false)
-  isActive          Boolean   @default(true)
-  role              UserRole  @default(USER)
-  lastLoginAt       DateTime?
-  emailVerifiedAt   DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-
-  // Authentication
-  password          String?
-  resetToken        String?
-  resetTokenExpiry  DateTime?
-  verificationToken String?
-
-  // Location & Preferences
-  location          String?
-  timeZone          String?
-  language          String    @default("en")
-  country           String?
-  state             String?
-  city              String?
-
-  // Social Features
-  isPublicProfile   Boolean   @default(true)
-  allowMessages     Boolean   @default(true)
-  showLocation      Boolean   @default(false)
-
-  // Relationships
-  reviews           Review[]
-  trips             Trip[]
-  favorites         Favorite[]
-  achievements      UserAchievement[]
-  preferences       UserPreference?
-  socialConnections SocialConnection[] @relation("UserConnections")
-  connectedUsers    SocialConnection[] @relation("ConnectedUsers")
-  analyticsEvents   AnalyticsEvent[]
-  notifications     Notification[]
-  photoContests     PhotoContestEntry[]
-  liveUpdates       LiveUpdate[]
-  rangerChats       RangerChat[]
-
-  @@map("users")
-}
-
-model UserPreference {
-  id                    String   @id @default(cuid())
-  userId                String   @unique
-  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Activity Preferences
-  preferredActivities   String[] // hiking, camping, photography, etc.
-  difficultyLevel       DifficultyLevel @default(MODERATE)
-  accessibilityNeeds    String[] // wheelchair, visual, hearing, etc.
-
-  // Notification Preferences
-  emailNotifications    Boolean  @default(true)
-  pushNotifications     Boolean  @default(true)
-  smsNotifications      Boolean  @default(false)
-  weeklyDigest          Boolean  @default(true)
-  weatherAlerts         Boolean  @default(true)
-  crowdAlerts           Boolean  @default(false)
-
-  // AI Preferences
-  enableAIRecommendations Boolean @default(true)
-  enableVoiceFeatures     Boolean @default(true)
-  enableARFeatures        Boolean @default(true)
-  personalizedContent     Boolean @default(true)
-
-  // Privacy Settings
-  shareLocation         Boolean  @default(false)
-  shareTrips            Boolean  @default(true)
-  sharePhotos           Boolean  @default(true)
-  allowDataCollection   Boolean  @default(true)
-
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-
-  @@map("user_preferences")
 }
 
 enum UserRole {
@@ -112,804 +16,213 @@ enum UserRole {
   SUPER_ADMIN
 }
 
-enum DifficultyLevel {
-  EASY
-  MODERATE
-  HARD
-  EXPERT
-}
-
-// ===============================
-// 🏞️ PARKS & LOCATIONS
-// ===============================
-
-model Park {
-  id                String      @id @default(cuid())
-  npsId             String?     @unique // National Park Service ID
-  name              String
-  slug              String      @unique
-  description       String
-  shortDescription  String?
-
-  // Location Data
-  state             String
-  latitude          Float
-  longitude         Float
-  elevation         Int?
-  area              Float?      // in square miles
-  timeZone          String?
-
-  // Contact & Info
-  phone             String?
-  email             String?
-  website           String?
-  address           String?
-  zipCode           String?
-
-  // Features & Amenities
-  activities        String[]    // hiking, camping, fishing, etc.
-  amenities         String[]    // visitor_center, parking, restrooms, etc.
-  accessibility     String[]    // wheelchair, visual_aid, etc.
-  entranceFees      Json?       // fee structure as JSON
-
-  // Media
-  featuredImage     String?
-  images            String[]
-  videos            String[]
-  virtualTourUrl    String?
-
-  // Operational Info
-  isOpen            Boolean     @default(true)
-  operatingHours    Json?       // hours by season/day as JSON
-  seasonInfo        Json?       // seasonal information
-  alertLevel        AlertLevel  @default(GREEN)
-  lastUpdated       DateTime    @default(now())
-
-  // Stats
-  visitorsPerYear   Int?
-  peakSeason        String?
-  crowdLevel        CrowdLevel  @default(MODERATE)
-  weatherRating     Float?      @default(0)
-
-  // AI/ML Features
-  aiDescription     String?     // AI-generated description
-  recommendationScore Float?    @default(0)
-
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
-
-  // Relationships
-  reviews           Review[]
-  tripStops         TripStop[]
-  favorites         Favorite[]
-  weatherData       WeatherData[]
-  crowdData         CrowdData[]
-  trails            Trail[]
-  liveUpdates       LiveUpdate[]
-  photoContests     PhotoContestEntry[]
-
-  @@map("parks")
-}
-
-model Trail {
-  id              String        @id @default(cuid())
-  parkId          String
-  park            Park          @relation(fields: [parkId], references: [id], onDelete: Cascade)
-
-  name            String
-  description     String?
-  difficulty      DifficultyLevel
-  length          Float         // in miles
-  elevationGain   Int?          // in feet
-  estimatedTime   Int           // in minutes
-  trailType       TrailType
-
-  // Location
-  startLatitude   Float?
-  startLongitude  Float?
-  endLatitude     Float?
-  endLongitude    Float?
-  gpxData         String?       // GPX track data
-
-  // Features
-  features        String[]      // waterfall, lookout, wildlife, etc.
-  accessibility   String[]
-  seasonality     String[]      // best months to visit
-
-  // Conditions
-  isOpen          Boolean       @default(true)
-  condition       TrailCondition @default(GOOD)
-  lastMaintained  DateTime?
-
-  // Media
-  images          String[]
-  mapUrl          String?
-
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-
-  @@map("trails")
-}
-
-enum TrailType {
-  LOOP
-  OUT_AND_BACK
-  POINT_TO_POINT
-  NETWORK
-}
-
-enum TrailCondition {
-  EXCELLENT
-  GOOD
-  FAIR
-  POOR
-  CLOSED
-}
-
-enum AlertLevel {
-  GREEN
-  YELLOW
-  ORANGE
-  RED
-}
-
 enum CrowdLevel {
   LOW
-  MODERATE
+  MEDIUM
   HIGH
   VERY_HIGH
 }
 
-// ===============================
-// 📝 REVIEWS & RATINGS
-// ===============================
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  name              String
+  password          String
+  role              UserRole  @default(USER)
+  isVerified        Boolean   @default(false)
+  isActive          Boolean   @default(true)
+  avatar            String?
+  bio               String?
+  location          String?
+  lastLoginAt       DateTime?
+  passwordChangedAt DateTime?
+  emailVerifiedAt   DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  reviews           Review[]
+  favorites         Favorite[]
+  trips             Trip[]
+  visits            Visit[]
+  photos            Photo[]
+  apiKeys           ApiKey[]
+
+  @@map("users")
+}
+
+model Park {
+  id              String     @id @default(cuid())
+  name            String
+  slug            String     @unique
+  state           String
+  description     String
+  fullDescription String?
+  images          String[]
+  activities      String[]
+  coordinates     Json       // { lat: number, lng: number }
+  popularityScore Float      @default(0)
+  crowdLevel      CrowdLevel @default(MEDIUM)
+  bestTimeToVisit String[]
+  fees            Json?      // { entrance: number, camping: number, etc. }
+  contact         Json?      // { phone: string, email: string, website: string }
+  amenities       String[]
+  accessibility   String[]
+  rules           String[]
+  alerts          String[]
+  weatherStation  String?
+  npsId           String?    @unique
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  // Relations
+  reviews         Review[]
+  favorites       Favorite[]
+  trips           Trip[]
+  visits          Visit[]
+  photos          Photo[]
+  trails          Trail[]
+
+  @@map("parks")
+}
 
 model Review {
-  id              String        @id @default(cuid())
-  userId          String
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parkId          String
-  park            Park          @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  id          String    @id @default(cuid())
+  userId      String
+  parkId      String
+  rating      Int       // 1-5 stars
+  title       String
+  content     String
+  images      String[]
+  tags        String[]
+  isVerified  Boolean   @default(false) // Verified visit
+  isPublished Boolean   @default(true)
+  visitDate   DateTime?
+  helpfulVotes Int      @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  // Review Content
-  title           String
-  content         String
-  rating          Int           // 1-5 stars
-  visitDate       DateTime
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  park        Park      @relation(fields: [parkId], references: [id], onDelete: Cascade)
 
-  // Detailed Ratings
-  accessibilityRating   Int?    // 1-5
-  amenitiesRating       Int?    // 1-5
-  sceneryRating         Int?    // 1-5
-  crowdRating           Int?    // 1-5 (less crowded = higher)
-
-  // Visit Context
-  visitType       VisitType
-  groupSize       Int?
-  visitDuration   Int?          // in hours
-  activities      String[]
-  bestTimeOfYear  String[]
-
-  // Media
-  images          String[]
-  videos          String[]
-
-  // AI Analysis
-  sentiment       ReviewSentiment?
-  aiSummary       String?
-  helpfulnessScore Float?        @default(0)
-
-  // Moderation
-  isApproved      Boolean       @default(true)
-  isDeleted       Boolean       @default(false)
-  moderatedAt     DateTime?
-
-  // Engagement
-  helpfulVotes    Int           @default(0)
-  unhelpfulVotes  Int           @default(0)
-
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-
+  @@unique([userId, parkId]) // One review per user per park
   @@map("reviews")
 }
 
-enum VisitType {
-  DAY_TRIP
-  OVERNIGHT_CAMPING
-  BACKPACKING
-  RV_CAMPING
-  LODGE_STAY
-  BUSINESS
-}
-
-enum ReviewSentiment {
-  VERY_POSITIVE
-  POSITIVE
-  NEUTRAL
-  NEGATIVE
-  VERY_NEGATIVE
-}
-
-// ===============================
-// 🗺️ TRIP PLANNING
-// ===============================
-
-model Trip {
-  id              String        @id @default(cuid())
-  userId          String
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Trip Details
-  name            String
-  description     String?
-  startDate       DateTime
-  endDate         DateTime
-  totalDays       Int
-  totalDistance   Float?        // in miles
-  estimatedCost   Float?
-
-  // Trip Settings
-  isPublic        Boolean       @default(false)
-  allowCollaboration Boolean    @default(false)
-  shareCode       String?       @unique
-
-  // AI Features
-  isAIGenerated   Boolean       @default(false)
-  aiRecommendations Json?
-  optimizedRoute  Json?
-
-  // Status
-  status          TripStatus    @default(PLANNING)
-
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-
-  // Relationships
-  stops           TripStop[]
-  collaborators   TripCollaborator[]
-
-  @@map("trips")
-}
-
-model TripStop {
-  id              String        @id @default(cuid())
-  tripId          String
-  trip            Trip          @relation(fields: [tripId], references: [id], onDelete: Cascade)
-  parkId          String
-  park            Park          @relation(fields: [parkId], references: [id], onDelete: Cascade)
-
-  // Stop Details
-  order           Int           // order in the trip
-  arrivalDate     DateTime
-  departureDate   DateTime
-  duration        Int           // in hours
-
-  // Planning
-  activities      String[]
-  notes           String?
-  estimatedCost   Float?
-  accommodation   String?
-
-  // AI Suggestions
-  recommendedDuration Int?       // AI-suggested duration in hours
-  optimalTime     String?       // best time of day to visit
-
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-
-  @@map("trip_stops")
-}
-
-model TripCollaborator {
-  id              String              @id @default(cuid())
-  tripId          String
-  trip            Trip                @relation(fields: [tripId], references: [id], onDelete: Cascade)
-  email           String
-  role            CollaboratorRole    @default(VIEWER)
-  status          CollaborationStatus @default(PENDING)
-
-  invitedAt       DateTime            @default(now())
-  respondedAt     DateTime?
-
-  @@unique([tripId, email])
-  @@map("trip_collaborators")
-}
-
-enum TripStatus {
-  PLANNING
-  CONFIRMED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-}
-
-enum CollaboratorRole {
-  VIEWER
-  EDITOR
-  ADMIN
-}
-
-enum CollaborationStatus {
-  PENDING
-  ACCEPTED
-  DECLINED
-}
-
-// ===============================
-// ⭐ FAVORITES & LISTS
-// ===============================
-
 model Favorite {
-  id              String          @id @default(cuid())
-  userId          String
-  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parkId          String
-  park            Park            @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  userId    String
+  parkId    String
+  createdAt DateTime @default(now())
 
-  category        FavoriteCategory @default(WISHLIST)
-  notes           String?
-  priority        Int             @default(0)
-
-  createdAt       DateTime        @default(now())
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  park      Park     @relation(fields: [parkId], references: [id], onDelete: Cascade)
 
   @@unique([userId, parkId])
   @@map("favorites")
 }
 
-enum FavoriteCategory {
-  WISHLIST
-  VISITED
-  RECOMMENDED
-  BUCKET_LIST
+model Trip {
+  id          String     @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  isPublic    Boolean    @default(false)
+  budget      Float?
+  status      String     @default("planned") // planned, active, completed, cancelled
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parks       Park[]
+  visits      Visit[]
+
+  @@map("trips")
 }
 
-// ===============================
-// 🏆 GAMIFICATION
-// ===============================
+model Visit {
+  id         String    @id @default(cuid())
+  userId     String
+  parkId     String
+  tripId     String?
+  visitDate  DateTime
+  duration   Int?      // minutes
+  notes      String?
+  weather    Json?     // weather conditions during visit
+  crowdLevel CrowdLevel?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
-model Achievement {
-  id              String    @id @default(cuid())
-  name            String    @unique
-  description     String
-  icon            String
-  category        AchievementCategory
-  difficulty      DifficultyLevel
-  points          Int       @default(0)
+  // Relations
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  park       Park      @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  trip       Trip?     @relation(fields: [tripId], references: [id], onDelete: SetNull)
 
-  // Requirements
-  requirements    Json      // flexible requirements structure
-
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-
-  // Relationships
-  userAchievements UserAchievement[]
-
-  @@map("achievements")
+  @@map("visits")
 }
 
-model UserAchievement {
-  id              String      @id @default(cuid())
-  userId          String
-  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  achievementId   String
-  achievement     Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+model Photo {
+  id          String   @id @default(cuid())
+  userId      String
+  parkId      String?
+  url         String
+  thumbnailUrl String?
+  caption     String?
+  tags        String[]
+  location    Json?    // GPS coordinates
+  metadata    Json?    // EXIF data, camera info, etc.
+  isPublic    Boolean  @default(true)
+  isVerified  Boolean  @default(false)
+  uploadedAt  DateTime @default(now())
 
-  progress        Float       @default(0) // 0-100%
-  isCompleted     Boolean     @default(false)
-  completedAt     DateTime?
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  park        Park?    @relation(fields: [parkId], references: [id], onDelete: SetNull)
 
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-
-  @@unique([userId, achievementId])
-  @@map("user_achievements")
+  @@map("photos")
 }
 
-enum AchievementCategory {
-  EXPLORATION
-  SOCIAL
-  CONSERVATION
-  PHOTOGRAPHY
-  HIKING
-  CAMPING
+model Trail {
+  id          String   @id @default(cuid())
+  parkId      String
+  name        String
+  description String?
+  difficulty  String   // easy, moderate, hard, expert
+  length      Float    // miles
+  elevationGain Int?   // feet
+  duration    Int?     // estimated minutes
+  type        String   // loop, out-and-back, point-to-point
+  features    String[] // waterfall, wildlife, scenic-views, etc.
+  conditions  String[] // well-maintained, rocky, muddy, etc.
+  coordinates Json     // GPS waypoints
+  isOpen      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  park        Park     @relation(fields: [parkId], references: [id], onDelete: Cascade)
+
+  @@map("trails")
 }
 
-// ===============================
-// 👥 SOCIAL FEATURES
-// ===============================
-
-model SocialConnection {
-  id              String            @id @default(cuid())
-  userId          String
-  user            User              @relation("UserConnections", fields: [userId], references: [id], onDelete: Cascade)
-  connectedUserId String
-  connectedUser   User              @relation("ConnectedUsers", fields: [connectedUserId], references: [id], onDelete: Cascade)
-
-  status          ConnectionStatus  @default(PENDING)
-  connectionType  ConnectionType    @default(FRIEND)
-
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-
-  @@unique([userId, connectedUserId])
-  @@map("social_connections")
-}
-
-enum ConnectionStatus {
-  PENDING
-  ACCEPTED
-  BLOCKED
-}
-
-enum ConnectionType {
-  FRIEND
-  FOLLOWER
-  FAMILY
-}
-
-// ===============================
-// 📊 REAL-TIME DATA
-// ===============================
-
-model WeatherData {
-  id              String    @id @default(cuid())
-  parkId          String
-  park            Park      @relation(fields: [parkId], references: [id], onDelete: Cascade)
-
-  // Current Weather
-  temperature     Float
-  humidity        Int
-  windSpeed       Float
-  windDirection   Int?
-  pressure        Float?
-  visibility      Float?
-  uvIndex         Float?
-
-  // Conditions
-  condition       String    // clear, cloudy, rainy, etc.
-  description     String?
-  cloudCover      Int?
-  precipitation   Float?
-
-  // Timestamps
-  recordedAt      DateTime
-  forecastDate    DateTime?
-
-  // AI Predictions
-  aiPrediction    Json?
-  confidence      Float?
-
-  createdAt       DateTime  @default(now())
-
-  @@map("weather_data")
-}
-
-model CrowdData {
-  id              String      @id @default(cuid())
-  parkId          String
-  park            Park        @relation(fields: [parkId], references: [id], onDelete: Cascade)
-
-  // Crowd Metrics
-  crowdLevel      CrowdLevel
-  capacity        Int?        // estimated capacity percentage
-  waitTime        Int?        // in minutes
-  parkingSpaces   Int?        // available parking
-
-  // Location Specific
-  area            String?     // visitor center, trails, etc.
-  entrance        String?     // specific entrance
-
-  // Source
-  source          CrowdDataSource
-  confidence      Float?      // confidence in the data
-
-  // Timestamps
-  recordedAt      DateTime
-  validUntil      DateTime?
-
-  createdAt       DateTime    @default(now())
-
-  @@map("crowd_data")
-}
-
-enum CrowdDataSource {
-  USER_REPORT
-  SENSOR_DATA
-  AI_PREDICTION
-  PARK_SERVICE
-  SATELLITE
-}
-
-// ===============================
-// 🤖 AI & ANALYTICS
-// ===============================
-
-model MLModel {
-  id              String        @id @default(cuid())
-  name            String        @unique
-  version         String
-  type            ModelType
-  description     String?
-
-  // Model Configuration
-  config          Json
-  parameters      Json?
-  metrics         Json?         // accuracy, precision, recall, etc.
-
-  // Deployment
-  isActive        Boolean       @default(false)
-  deployedAt      DateTime?
-  lastTrainedAt   DateTime?
-
-  // Performance
-  accuracy        Float?
-  latency         Int?          // in milliseconds
-  throughput      Float?        // requests per second
-
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-
-  @@map("ml_models")
-}
-
-enum ModelType {
-  RECOMMENDATION
-  PREDICTION
-  CLASSIFICATION
-  NLP
-  COMPUTER_VISION
-  CLUSTERING
-}
-
-model AnalyticsEvent {
-  id              String        @id @default(cuid())
-  userId          String?
-  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  // Event Details
-  eventName       String
-  eventType       EventType
-  category        String?
-
-  // Context
-  properties      Json?         // flexible event properties
-  sessionId       String?
-  deviceId        String?
-  ipAddress       String?
-  userAgent       String?
-
-  // Location
-  country         String?
-  region          String?
-  city            String?
-
-  // Timestamps
-  timestamp       DateTime      @default(now())
-  serverTimestamp DateTime      @default(now())
-
-  @@map("analytics_events")
-}
-
-enum EventType {
-  PAGE_VIEW
-  CLICK
-  SEARCH
-  PURCHASE
-  SIGNUP
-  LOGIN
-  PARK_VIEW
-  TRIP_CREATE
-  REVIEW_CREATE
-  FAVORITE_ADD
-}
-
-// ===============================
-// 📱 COMMUNITY FEATURES
-// ===============================
-
-model LiveUpdate {
-  id              String        @id @default(cuid())
-  userId          String
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parkId          String
-  park            Park          @relation(fields: [parkId], references: [id], onDelete: Cascade)
-
-  // Update Content
-  type            UpdateType
-  title           String
-  content         String
-  location        String?       // specific location within park
-
-  // Media
-  images          String[]
-  videos          String[]
-
-  // Metadata
-  severity        UpdateSeverity @default(INFO)
-  tags            String[]
-  isVerified      Boolean       @default(false)
-  verifiedBy      String?       // ranger/admin who verified
-
-  // Engagement
-  upvotes         Int           @default(0)
-  downvotes       Int           @default(0)
-
-  // Timestamps
-  expiresAt       DateTime?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-
-  @@map("live_updates")
-}
-
-enum UpdateType {
-  CROWD_REPORT
-  WEATHER_ALERT
-  WILDLIFE_SIGHTING
-  TRAIL_CONDITION
-  PARKING_STATUS
-  GENERAL_INFO
-}
-
-enum UpdateSeverity {
-  LOW
-  INFO
-  WARNING
-  URGENT
-  EMERGENCY
-}
-
-model PhotoContestEntry {
-  id              String        @id @default(cuid())
-  userId          String
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parkId          String
-  park            Park          @relation(fields: [parkId], references: [id], onDelete: Cascade)
-
-  // Entry Details
-  title           String
-  description     String?
-  imageUrl        String
-  category        ContestCategory
-
-  // Contest Info
-  contestMonth    String        // YYYY-MM format
-  isWinner        Boolean       @default(false)
-
-  // Voting
-  votes           Int           @default(0)
-
-  // Metadata
-  location        String?       // where in the park
-  captureDate     DateTime?
-  cameraSettings  Json?         // EXIF data
-
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-
-  @@map("photo_contest_entries")
-}
-
-enum ContestCategory {
-  LANDSCAPE
-  WILDLIFE
-  MACRO
-  PEOPLE
-  SUNRISE_SUNSET
-  ADVENTURE
-}
-
-model RangerChat {
-  id              String        @id @default(cuid())
-  userId          String
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Chat Details
-  question        String
-  response        String?
-  category        ChatCategory
-
-  // Status
-  status          ChatStatus    @default(OPEN)
-  priority        ChatPriority  @default(NORMAL)
-
-  // Ranger Info
-  rangerId        String?       // assigned ranger user ID
-  assignedAt      DateTime?
-  respondedAt     DateTime?
-
-  // Engagement
-  isHelpful       Boolean?
-  rating          Int?          // 1-5 stars
-
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-
-  @@map("ranger_chats")
-}
-
-enum ChatCategory {
-  GENERAL_INFO
-  TRAIL_CONDITIONS
-  WEATHER
-  WILDLIFE
-  PERMITS
-  ACCESSIBILITY
-  EMERGENCY
-}
-
-enum ChatStatus {
-  OPEN
-  ASSIGNED
-  RESPONDED
-  CLOSED
-}
-
-enum ChatPriority {
-  LOW
-  NORMAL
-  HIGH
-  URGENT
-}
-
-// ===============================
-// 🔔 NOTIFICATIONS
-// ===============================
-
-model Notification {
-  id              String            @id @default(cuid())
-  userId          String
-  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Notification Content
-  title           String
-  message         String
-  type            NotificationType
-  category        NotificationCategory?
-
-  // Actions
-  actionUrl       String?
-  actionText      String?
-
-  // Metadata
-  data            Json?             // additional notification data
-
-  // Status
-  isRead          Boolean           @default(false)
-  readAt          DateTime?
-
-  // Delivery
-  channels        String[]          // email, push, sms
-  sentAt          DateTime?
-  deliveredAt     DateTime?
-
-  // Scheduling
-  scheduledFor    DateTime?
-  expiresAt       DateTime?
-
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-
-  @@map("notifications")
-}
-
-enum NotificationType {
-  INFO
-  WARNING
-  SUCCESS
-  ERROR
-  REMINDER
-  SOCIAL
-  MARKETING
-}
-
-enum NotificationCategory {
-  WEATHER_ALERT
-  TRIP_REMINDER
-  SOCIAL_UPDATE
-  PARK_ALERT
-  ACHIEVEMENT
-  SYSTEM
+model ApiKey {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  hashedKey   String   @unique
+  isActive    Boolean  @default(true)
+  rateLimit   Int      @default(1000) // requests per hour
+  lastUsedAt  DateTime?
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime?
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("api_keys")
 }

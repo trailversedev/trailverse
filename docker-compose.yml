@@ -33,7 +33,7 @@ services:
     restart: unless-stopped
 
   server:
-    build: 
+    build:
       context: ./server
       dockerfile: Dockerfile
     container_name: trailverse-server
@@ -47,23 +47,32 @@ services:
       DIRECT_URL: postgresql://postgres:postgres@trailverse-postgres:5432/trailverse
       NODE_ENV: development
       PORT: 5000
-      JWT_SECRET: your-super-secret-jwt-key-change-in-production-123456789
-      JWT_EXPIRES_IN: 7d
+      JWT_SECRET: trailverse-jwt-secret-change-in-production-min-32-chars-123456789
+      JWT_REFRESH_SECRET: trailverse-refresh-secret-different-from-jwt-min-32-chars-987654321
+      JWT_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 7d
       BCRYPT_ROUNDS: 12
-      REDIS_URL: redis://trailverse-redis:6379
+      REDIS_HOST: trailverse-redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      CLIENT_URL: http://localhost:3000
       NPS_API_KEY: demo-key
       OPENAI_API_KEY: demo-key
       WEATHER_API_KEY: demo-key
     volumes:
       - ./server:/app
       - /app/node_modules
+      - /app/dist
     working_dir: /app
     command: >
       sh -c "
         echo '🚀 Starting Trailverse Server...' &&
+        echo '📦 Installing dependencies...' &&
+        npm install &&
+        echo '🔧 Generating Prisma client...' &&
         npx prisma generate &&
+        echo '🗄️  Syncing database schema...' &&
         npx prisma db push --accept-data-loss &&
-        npm run db:seed &&
         echo '🎯 Starting Prisma Studio...' &&
         npx prisma studio --hostname 0.0.0.0 --port 5555 &
         echo '🔥 Starting development server...' &&
